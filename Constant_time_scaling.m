@@ -18,7 +18,7 @@ k_tf_dot = 10;
 tf = 10;
 t0 = 2;
 
-touf= 20;
+touf= 3;
 
 %Order of the Brienstien Polynomial
 n = 3;
@@ -112,7 +112,7 @@ y_t_vel = [];
 x_t_vel_new = [];
 y_t_vel_new = [];
 omega =[];
-
+a = [];
 
 
    F0_int = int(F_0);
@@ -162,8 +162,9 @@ for t = 2:0.01:10
   x_t_vel_i = double(subs(x_t_velocity,t));
   y_t_vel_i =  double(subs(y_t_velocity,t));
   
-  a = (tf-t)/(touf-t);
+  tc = 2;
   
+  a = (tf-tc)/(touf-tc);
   x_t_vel_new = [x_t_vel_new a*x_t_vel_i];
   y_t_vel_new = [y_t_vel_new a*y_t_vel_i];
   omega = [omega double(subs(theta_t_velocity,t))];
@@ -183,19 +184,26 @@ end
 %     drawnow 
 % end
 
+%% plotting
 x_t_new = [];
 y_t_new = [];
-for l = 2:length(x_t_vel_new)
-    
-%     if i ==1 
-%         x_t_new(l) = x_t(1);
-%     else
-        
-    x_t_new = [x_t_new x_t(l-1)+x_t_vel_new(l)*0.01*(cos(theta_t(l) + omega(l)*0.01))];
-    y_t_new = [y_t_new x_t(l-1)+y_t_vel_new(l)*0.01*(sin(theta_t(l) + omega(l)*0.01))];
-    
-    plot(x_t_new,y_t_new);
-    
-    
+theta0 = theta_t(1);
+for l = 2:length(x_t)
+    d =  (x_t_vel_new(l-1)*(0.01));
+    x_t_new = [x_t_new x_t(l-1) + d];
+    y_t_new = [y_t_new  y_t(l-1)+(y_t_vel_new(l-1)*(0.01))];
+  
+    axis([0 25 0 25]); 
+    hold on 
+    plot(x_t_new,y_t_new,'b');
+    plot(x_t_new(l-1),y_t_new(l-1),'o','MarkerFaceColor','red','MarkerSize',8);
+    plot(x_t(l-1),y_t(l-1),'o','MarkerFaceColor','g','MarkerSize',8);
+    legend('Bernstien path','Time scaled', 'Non-Time Scaled');
+    pause(0.01);
+    cla
 end
-    
+hold off
+plot(x_t_vel_new);
+hold on
+plot(x_t_vel);
+legend('Time scaled Velocity', 'Non-Time Scaled Velocity','Location','northwest');
