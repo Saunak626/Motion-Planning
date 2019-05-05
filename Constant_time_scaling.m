@@ -112,7 +112,7 @@ y_t_vel = [];
 x_t_vel_new = [];
 y_t_vel_new = [];
 omega =[];
-a = [];
+t_1 = [];
 
 
    F0_int = int(F_0);
@@ -134,6 +134,8 @@ a = [];
 
 
 for t = 2:0.01:10
+    
+    t_1 = [t_1 t];
     
     for i = 0:n
         mu =  (t-t0)/(tf-t0);
@@ -189,9 +191,12 @@ x_t_new = [];
 y_t_new = [];
 theta0 = theta_t(1);
 for l = 2:length(x_t)
-    d =  (x_t_vel_new(l-1)*(0.01));
+    
+    
+    
+    d =  (x_t_vel_new(l-1)*(0.01*a));
     x_t_new = [x_t_new x_t(l-1) + d];
-    y_t_new = [y_t_new  y_t(l-1)+(y_t_vel_new(l-1)*(0.01))];
+    y_t_new = [y_t_new  y_t(l-1)+(y_t_vel_new(l-1)*(0.01*a))];
   
     axis([0 25 0 25]); 
     hold on 
