@@ -1,6 +1,7 @@
+clear all 
 %Initial position and angular co-ordinates of the robot 
-x0 = 1; 
-y0 = 1;
+x0 = 0; 
+y0 = 0;
 theta0 = 0*pi/180;
 
 %Final position and angular co-ordinates of the robot 
@@ -16,9 +17,9 @@ k_tf_dot = 10;
 
 %Initial and final time 
 tf = 10;
-t0 = 2;
+t0 = 0;
 
-touf= 3;
+touf= 20;
 
 %Order of the Brienstien Polynomial
 n = 3;
@@ -113,7 +114,7 @@ x_t_vel_new = [];
 y_t_vel_new = [];
 omega =[];
 t_1 = [];
-
+a = 2;
 
    F0_int = int(F_0);
    F1_int = int(F_1);
@@ -127,13 +128,15 @@ t_1 = [];
  
  x_t_velocity = diff(x_t_eq);
  y_t_velocity = diff(y_t_eq);
+ x_t_scaledvel = a*diff(x_t_eq);
+ y_t_scaledvel = a*diff(y_t_eq);
  theta_t_velocity = diff(theta_t_eq);
 
  %time loop between t0 and tf for running and plotting the brienstien
  %polynomial based trajectory planning and generation
 
 
-for t = 2:0.01:10
+for t = 0:0.01:10
     
     t_1 = [t_1 t];
     
@@ -164,51 +167,59 @@ for t = 2:0.01:10
   x_t_vel_i = double(subs(x_t_velocity,t));
   y_t_vel_i =  double(subs(y_t_velocity,t));
   
-  tc = 2;
+  x_t_vel_new = [x_t_vel_new  a*double(subs(x_t_velocity,t))];
+  y_t_vel_new = [y_t_vel_new  a*double(subs(y_t_velocity,t))];
   
-  a = (tf-tc)/(touf-tc);
-  x_t_vel_new = [x_t_vel_new a*x_t_vel_i];
-  y_t_vel_new = [y_t_vel_new a*y_t_vel_i];
+  
+ 
   omega = [omega double(subs(theta_t_velocity,t))];
   
 end
 
+%% constant time scaling
+i = 1;
+x(1) = 0;
+y(1) = 0;
+x_old(1) = 0;
+y_old(1) = 0;
+t = [];
 
-% %Plotting of the trajectory 
-% plot(x_t,y_t)
-% hold on
-% p = plot(x_t(1),y_t(1),'o','MarkerFaceColor','red','MarkerSize',8);
-% hold off
-% 
-% for k = 2:length(x_t)
-%     p.XData = x_t(k);
-%     p.YData = y_t(k);
-%     drawnow 
-% end
+clear figure
+v_1 = [];
+v_2 = [];
 
-%% plotting
-x_t_new = [];
-y_t_new = [];
-theta0 = theta_t(1);
-for l = 2:length(x_t)
-    
-    
-    
-    d =  (x_t_vel_new(l-1)*(0.01*a));
-    x_t_new = [x_t_new x_t(l-1) + d];
-    y_t_new = [y_t_new  y_t(l-1)+(y_t_vel_new(l-1)*(0.01*a))];
-  
-    axis([0 25 0 25]); 
-    hold on 
-    plot(x_t_new,y_t_new,'b');
-    plot(x_t_new(l-1),y_t_new(l-1),'o','MarkerFaceColor','red','MarkerSize',8);
-    plot(x_t(l-1),y_t(l-1),'o','MarkerFaceColor','g','MarkerSize',8);
-    legend('Bernstien path','Time scaled', 'Non-Time Scaled');
-    pause(0.01);
-    cla
+for j = 0:0.02:10 
+
+if (j <= 5)   
+ x(i+1) = x(i) + ((a*double(subs(x_t_velocity,a*j)))*0.02);
+ y(i+1) = y(i) + ((a*double(subs(y_t_velocity,a*j)))*0.02);
+v_1(end+1) = sqrt((a*double(subs(x_t_velocity,a*j)))^2 + (a*double(subs(y_t_velocity,a*j)))^2);
+else
+x(i+1) = x(i);
+y(i+1) = y(i);
 end
-hold off
-plot(x_t_vel_new);
-hold on
-plot(x_t_vel);
-legend('Time scaled Velocity', 'Non-Time Scaled Velocity','Location','northwest');
+
+
+if (j <= 10)
+x_old(i+1) = x_old(i) + ((double(subs(x_t_velocity,j)))*0.02);
+y_old(i+1) = y_old(i) + ((double(subs(y_t_velocity,j)))*0.02);
+v_2(end+1) = sqrt((double(subs(x_t_velocity,j)))^2 + (double(subs(y_t_velocity,j)))^2);
+else
+    x_old(i+1) = x_old(i);
+    y_old(i+1) = y_old(i);
+end
+
+
+
+axis([0 25 0 25]); 
+plot(x_old,y_old,'b')
+hold on 
+
+plot(x(i+1),y(i+1),'o','MarkerFaceColor','red','MarkerSize',10);
+plot(x_old(i+1),y_old(i+1),'o','MarkerFaceColor','g','MarkerSize',10);
+legend('Bernstien path','Time scaled', 'Non-Time Scaled');
+pause(0.01);
+i=i+1
+cla
+
+end
